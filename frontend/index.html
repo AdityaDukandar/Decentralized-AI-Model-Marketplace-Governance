@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>AI Model Marketplace - Demo UI</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>
+    body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; padding:20px; }
+    .card{border:1px solid #ddd;padding:12px;margin:8px 0;border-radius:8px}
+    button{padding:8px 12px}
+    input, textarea { width:100%; margin:6px 0; padding:8px }
+  </style>
+</head>
+<body>
+  <h1>AI Model Marketplace — Demo UI</h1>
+  <div class="card">
+    <h3>Register model</h3>
+    <input id="model_id" placeholder="model id" value="demo_front_1"/>
+    <input id="owner_id" placeholder="owner id" value="web_user"/>
+    <textarea id="model_json" rows=6>{"predictions":[0,1,1,0],"labels":[0,1,1,0]}</textarea>
+    <button onclick="register()">Register</button>
+    <pre id="register_out"></pre>
+  </div>
+  <div class="card">
+    <h3>Evaluate model</h3>
+    <input id="eval_model_id" placeholder="model id" value="demo_front_1"/>
+    <input id="user_id" placeholder="user id" value="buyer_ui"/>
+    <select id="evaluator">
+      <option value="accuracy">accuracy</option>
+      <option value="robustness">robustness</option>
+      <option value="latency">latency</option>
+      <option value="fairness">fairness</option>
+    </select>
+    <button onclick="evaluate()">Evaluate</button>
+    <pre id="eval_out"></pre>
+  </div>
+  <script>
+    const API = 'http://localhost:8000';
+    async function register(){
+      const model_id = document.getElementById('model_id').value;
+      const owner_id = document.getElementById('owner_id').value;
+      let content = document.getElementById('model_json').value;
+      try{ content = JSON.parse(content) }catch(e){}
+      const resp = await fetch(API + '/register', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({model_id, owner_id, content, visibility:'public', price:1.5})});
+      const j = await resp.json();
+      document.getElementById('register_out').innerText = JSON.stringify(j, null, 2);
+    }
+    async function evaluate(){
+      const model_id = document.getElementById('eval_model_id').value;
+      const user_id = document.getElementById('user_id').value;
+      const evaluator = document.getElementById('evaluator').value;
+      const resp = await fetch(API + '/evaluate', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({model_id, user_id, role:'buyer', evaluator})});
+      const j = await resp.json();
+      document.getElementById('eval_out').innerText = JSON.stringify(j, null, 2);
+    }
+  </script>
+</body>
+</html>
